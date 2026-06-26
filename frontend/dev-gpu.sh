@@ -16,7 +16,7 @@ echo -e "${BLUE}🚀 Meetily GPU-Accelerated Development Mode${NC}"
 echo ""
 
 # Export CUDA flags for Linux/NVIDIA
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [[ "$OSTYPE" == linux* ]]; then
     export CMAKE_CUDA_ARCHITECTURES=75
     export CMAKE_CUDA_STANDARD=17
     export CMAKE_POSITION_INDEPENDENT_CODE=ON
@@ -25,7 +25,7 @@ fi
 # Detect OS
 if [[ "$OSTYPE" == "darwin"* ]]; then
     OS="macos"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+elif [[ "$OSTYPE" == linux* ]]; then
     OS="linux"
 else
     echo -e "${RED}❌ Unsupported OS: $OSTYPE${NC}"

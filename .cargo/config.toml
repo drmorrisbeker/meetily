@@ -1,0 +1,9 @@
+# Linux/bleeding-edge-clang fix (Sprint 1).
+# whisper-rs-sys 0.11.1 runs bindgen at build time; with libclang 22 (openSUSE
+# Tumbleweed) it mis-generates `whisper_full_params` as an opaque type, breaking
+# whisper-rs's own compilation (71x E0609 "no field ... on whisper_full_params").
+# clang parses the header fine — the fault is in bindgen+libclang22. The crate
+# ships a correct pre-generated src/bindings.rs; this env var makes it use that
+# instead of regenerating. See LINUX-NOTES.md.
+[env]
+WHISPER_DONT_GENERATE_BINDINGS = "1"
