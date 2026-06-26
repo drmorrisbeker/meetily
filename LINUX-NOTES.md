@@ -87,6 +87,26 @@ cd frontend && pnpm install
 - ✅ Sin errores de runtime en el arranque. `next dev` en `localhost:3118`, binario Tauri levantado.
 - Verificación visual por screenshot de la ventana (no se automatizó el click por pestañas para no interrumpir la sesión activa del usuario; `xdotool` no está instalado).
 
+## Cómo correr: estable (estático) vs desarrollo (hot reload)
+- **Estable / demo (recomendado para revisar):** build estático embebido, sin dev-server.
+  ```bash
+  cd frontend && pnpm tauri build --debug --no-bundle   # reusa binario debug, ~1-2 min
+  ./../target/debug/meetily                              # ejecutable (ventana "Soferly")
+  ```
+  El frontend queda pre-compilado en `frontend/out/` y embebido → no hay `ChunkLoadError`.
+- **Desarrollo (hot reload):** `cd frontend && ./dev-gpu.sh`. Útil para iterar, **pero** ver el gotcha de abajo.
+
+## Gotcha: `ChunkLoadError` en modo dev dentro del webview
+En `tauri dev`, Next compila las rutas **bajo demanda**; la primera carga tarda (~10s) y el webview de Tauri (webkit2gtk) corta la carga del chunk antes de tiempo → `ChunkLoadError: Loading chunk app/layout failed (timeout ...:3118/...)`. Síntoma: la UI aparece pero **los clicks no hacen nada** (el JS no hidrató: cáscara estática muerta), y a veces aparece el overlay rojo de error.
+- **No es un bug del código.** Es la fragilidad del dev-server dentro del webview en Linux.
+- **Workaround inmediato:** usar el build estático (arriba). Para Sprint 2 (que requiere iterar), evaluar: recargar el webview tras el primer compile, subir el timeout de carga de chunks, o pre-compilar rutas. Anotar como deuda de DX.
+- **OJO:** no matar el `next dev` (puerto 3118) con una ventana abierta apuntándole → provoca el mismo `ChunkLoadError`.
+
+## Rebrand a Soferly (hecho)
+- `productName` y título de ventana → **Soferly** (en `tauri.conf.json`). `identifier` se dejó `com.meetily.ai` para no cambiar rutas de datos (cambiarlo a `com.soferly.app` implica empezar con datos limpios).
+- Todos los textos visibles `Meetily`→`Soferly` (sidebar, About, Info, onboarding, permisos, welcome). Quedaron sin tocar IDs/URLs internos (`meetily_user_id`, `MeetilyRecoveryDB`, links a zackriya/github, rutas Homebrew de macOS).
+- **Logo nuevo:** `frontend/public/soferly-logo.svg` (onda de sonido sobre cuadrado redondeado, gradiente índigo→violeta). PNGs de la app (`logo.png`, `logo-collapsed.png`) y todo el set de íconos del sistema regenerados con `pnpm tauri icon`. SVG→PNG con `cairosvg` (ImageMagick tiene el coder SVG bloqueado por policy en esta máquina).
+
 ## Gotchas para Sprint 2
 - **Wayland vs X11:** esta sesión es X11 → atajo global OK. Si se cambia a Wayland, el global shortcut puede no funcionar; anotarlo.
 - **Tray** depende de `ayatana-appindicator3` (ya instalado).
